@@ -2,7 +2,7 @@
   "compilerOptions": {
     "rootDir": ".",
     "paths": {
-      "react-native-vision-camera-text-detector": ["./src/index"]
+      "@bear-block/vision-camera-ocr": ["./src/index"]
     },
     "allowUnreachableCode": false,
     "allowUnusedLabels": false,

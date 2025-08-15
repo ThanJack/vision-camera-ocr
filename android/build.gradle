@@ -1,6 +1,6 @@
 buildscript {
   ext.getExtOrDefault = {name ->
-    return rootProject.ext.has(name) ? rootProject.ext.get(name) : project.properties['VisionCameraTextDetector_' + name]
+    return rootProject.ext.has(name) ? rootProject.ext.get(name) : project.properties['VisionCameraOcr_' + name]
   }
 
   repositories {
@@ -22,11 +22,11 @@ apply plugin: "kotlin-android"
 apply plugin: "com.facebook.react"
 
 def getExtOrIntegerDefault(name) {
-  return rootProject.ext.has(name) ? rootProject.ext.get(name) : (project.properties["VisionCameraTextDetector_" + name]).toInteger()
+  return rootProject.ext.has(name) ? rootProject.ext.get(name) : (project.properties["VisionCameraOcr_" + name]).toInteger()
 }
 
 android {
-  namespace "com.visioncameratextdetector"
+  namespace "com.bearblock.visioncameraocr"
 
   compileSdkVersion getExtOrIntegerDefault("compileSdkVersion")
 
@@ -74,10 +74,13 @@ def kotlin_version = getExtOrDefault("kotlinVersion")
 dependencies {
   implementation "com.facebook.react:react-android"
   implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+  implementation project(':react-native-vision-camera')
+  implementation 'com.google.mlkit:text-recognition:16.0.1'
+  implementation "androidx.camera:camera-core:1.3.4"
 }
 
 react {
   jsRootDir = file("../src/")
-  libraryName = "VisionCameraTextDetector"
-  codegenJavaPackageName = "com.visioncameratextdetector"
+  libraryName = "VisionCameraOcr"
+  codegenJavaPackageName = "com.bearblock.visioncameraocr"
 }

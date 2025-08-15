@@ -1,7 +1,7 @@
 {
-  "name": "react-native-vision-camera-text-detector",
-  "version": "0.1.0",
-  "description": "A React Native Vision Camera plugin for real-time text detection. This package enables seamless integration of on-device OCR by using Google ML Kit on Android and Apple’s Vision Framework on iOS. It provides fast, efficient, and cross-platform text recognition capabilities directly within Vision Camera for React Native apps.",
+  "name": "@bear-block/vision-camera-ocr",
+  "version": "1.0.0",
+  "description": "A React Native Vision Camera plugin for real-time OCR (Optical Character Recognition). This package enables seamless integration of on-device OCR by using Google ML Kit on Android and Apple's Vision Framework on iOS. It provides fast, efficient, and cross-platform text recognition capabilities directly within Vision Camera for React Native apps.",
   "main": "./lib/module/index.js",
   "types": "./lib/typescript/src/index.d.ts",
   "exports": {
@@ -32,31 +32,37 @@
     "!**/.*"
   ],
   "scripts": {
-    "example": "yarn workspace react-native-vision-camera-text-detector-example",
     "test": "jest",
     "typecheck": "tsc",
     "lint": "eslint \"**/*.{js,ts,tsx}\"",
-    "clean": "del-cli android/build example/android/build example/android/app/build example/ios/build lib",
+    "clean": "del-cli android/build lib",
     "prepare": "bob build",
     "release": "release-it --only-version"
   },
   "keywords": [
     "react-native",
     "ios",
-    "android"
+    "android",
+    "react-native-vision-camera",
+    "vision-camera",
+    "ocr",
+    "text-recognition",
+    "text-detection",
+    "bear-block"
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/haodev7/react-native-vision-camera-text-detector.git"
+    "url": "git+https://github.com/bear-block/vision-camera-ocr.git"
   },
-  "author": "hao.dev7 <hao.dev7@gmail.com> (https://github.com/haodev7)",
+  "author": "Bear Block <info@bear-block.com> (https://github.com/bear-block)",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/haodev7/react-native-vision-camera-text-detector/issues"
+    "url": "https://github.com/bear-block/vision-camera-ocr/issues"
   },
-  "homepage": "https://github.com/haodev7/react-native-vision-camera-text-detector#readme",
+  "homepage": "https://github.com/bear-block/vision-camera-ocr#readme",
   "publishConfig": {
-    "registry": "https://registry.npmjs.org/"
+    "registry": "https://registry.npmjs.org/",
+    "access": "public"
   },
   "devDependencies": {
     "@commitlint/config-conventional": "^19.6.0",
@@ -80,17 +86,18 @@
     "react": "19.0.0",
     "react-native": "0.79.2",
     "react-native-builder-bob": "^0.40.11",
+    "react-native-vision-camera": "^4.6.4",
+    "react-native-worklets-core": "^1.5.0",
     "release-it": "^17.10.0",
     "turbo": "^1.10.7",
     "typescript": "^5.8.3"
   },
   "peerDependencies": {
     "react": "*",
-    "react-native": "*"
+    "react-native": "*",
+    "react-native-vision-camera": ">= 3",
+    "react-native-worklets-core": "^1.5.0"
   },
-  "workspaces": [
-    "example"
-  ],
   "packageManager": "yarn@3.6.1",
   "jest": {
     "preset": "react-native",
@@ -149,11 +156,11 @@
     ]
   },
   "codegenConfig": {
-    "name": "VisionCameraTextDetectorSpec",
+    "name": "VisionCameraOcrSpec",
     "type": "modules",
     "jsSrcsDir": "src",
     "android": {
-      "javaPackageName": "com.visioncameratextdetector"
+      "javaPackageName": "com.bearblock.visioncameraocr"
     }
   },
   "create-react-native-library": {
