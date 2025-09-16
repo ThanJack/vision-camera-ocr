@@ -183,25 +183,47 @@ const styles = StyleSheet.create({
 
 ## 📚 API Reference
 
-### `performOcr(frame: Frame): { text: string } | null`
+### `performOcr(frame: Frame, options?: OcrOptions): OcrResult | null`
 
-Performs OCR on a camera frame and returns the detected text.
+Performs OCR on a camera frame and returns recognized text with optional structure. Returns `null` when no text is detected.
 
 #### Parameters
 
 - `frame` (Frame): The camera frame to process from `react-native-vision-camera`
+- `options` (optional):
+  - `includeBoxes?: boolean` — include normalized bounding boxes for blocks/lines/words
+  - `includeConfidence?: boolean` — include confidence scores when available (iOS lines)
+  - `recognitionLevel?: 'fast' | 'accurate'` (iOS) — control Vision request speed/accuracy
+  - `recognitionLanguages?: string[]` (iOS) — language hints, e.g. `["en-US", "vi-VN"]`
+  - `usesLanguageCorrection?: boolean` (iOS) — enable language correction
 
 #### Returns
 
-- `{ text: string } | null`: Object containing the recognized text, or `null` if no text detected
+- `OcrResult | null`:
+  - `text: string` — concatenated recognized text
+  - `blocks?: OcrBlock[]` — present when `includeBoxes` is true
+    - `OcrBlock`: `{ text: string, box?: OcrBox, lines?: OcrLine[] }`
+    - `OcrLine`: `{ text: string, box?: OcrBox, words?: OcrWord[], confidence?: number }`
+    - `OcrWord`: `{ text: string, box?: OcrBox, confidence?: number }`
+    - `OcrBox`: `{ x: number, y: number, width: number, height: number }` (normalized 0..1 on iOS; absolute px on Android for now)
 
 #### Example
 
 ```typescript
-const result = performOcr(frame);
+const result = performOcr(frame, {
+  includeBoxes: true,
+  includeConfidence: true,
+  recognitionLevel: 'accurate', // iOS
+  recognitionLanguages: ['en-US', 'vi-VN'], // iOS
+  usesLanguageCorrection: true, // iOS
+});
 if (result) {
   console.log('Detected text:', result.text);
-  // Use the text in your app
+  const firstLine = result.blocks?.[0]?.lines?.[0];
+  if (firstLine?.box) {
+    // Use normalized box on iOS (0..1). Android currently returns pixel units.
+    console.log('First line box:', firstLine.box);
+  }
 } else {
   console.log('No text detected');
 }
@@ -211,16 +233,9 @@ if (result) {
 
 ### Frame Processor Options
 
-The plugin supports configuration options when initializing:
+Runtime `performOcr` options are recommended (see above). Initialization options are currently limited and not required.
 
-```typescript
-// Currently supported options (implementation pending)
-const plugin = VisionCameraProxy.initFrameProcessorPlugin('detectText', {
-  model: 'fast', // ⚠️ Note: Model option is currently logged but not fully implemented
-});
-```
-
-> **Note**: Advanced configuration options are planned for future releases. Currently, the plugin uses default settings optimized for performance and accuracy.
+> Note: Android uses ML Kit Latin text recognizer by default. iOS options map to Apple's Vision.
 
 ## 📱 Platform-Specific Details
 
@@ -229,12 +244,15 @@ const plugin = VisionCameraProxy.initFrameProcessorPlugin('detectText', {
 - Optimized for Latin script languages
 - Automatic language detection
 - Fast processing with minimal memory usage
+ - Bounding boxes returned in pixel units (subject to change to normalized in future)
 
 ### iOS
 - Uses Apple's Vision Framework
 - Native integration with iOS camera system
 - Support for multiple text recognition languages
 - Optimized for iOS performance characteristics
+ - Supports `recognitionLevel`, `recognitionLanguages`, `usesLanguageCorrection`
+ - Bounding boxes returned normalized (0..1); y-origin is top-left in returned box structure
 
 ## 🎨 Use Cases
 

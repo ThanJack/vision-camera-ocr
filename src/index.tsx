@@ -16,9 +16,52 @@ const plugin = VisionCameraProxy.initFrameProcessorPlugin('detectText', {
  * @param frame - The camera frame to process
  * @returns Object containing recognized text or null if no text found
  */
-export function performOcr(frame: Frame): { text: string } | null {
+export type OcrOptions = {
+  includeBoxes?: boolean;
+  includeConfidence?: boolean;
+  // iOS only options (ignored on Android)
+  recognitionLevel?: 'fast' | 'accurate';
+  recognitionLanguages?: string[];
+  usesLanguageCorrection?: boolean;
+};
+
+export type OcrBox = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+};
+
+export type OcrWord = {
+  text: string;
+  box?: OcrBox;
+  confidence?: number;
+};
+
+export type OcrLine = {
+  text: string;
+  box?: OcrBox;
+  words?: OcrWord[];
+  confidence?: number;
+};
+
+export type OcrBlock = {
+  text: string;
+  box?: OcrBox;
+  lines?: OcrLine[];
+};
+
+export type OcrResult = {
+  text: string;
+  blocks?: OcrBlock[];
+};
+
+export function performOcr(
+  frame: Frame,
+  options?: OcrOptions
+): OcrResult | null {
   'worklet';
   if (plugin == null)
     throw new Error('Failed to load Frame Processor Plugin "detectText"!');
-  return plugin.call(frame) as { text: string } | null;
+  return plugin.call(frame, options ?? {}) as unknown as OcrResult | null;
 }

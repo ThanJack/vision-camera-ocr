@@ -38,6 +38,11 @@ class OcrFrameProcessorPlugin(
       }
     }
 
+    // Read call-time arguments
+    val includeBoxes = (arguments?.get("includeBoxes") as? Boolean) ?: false
+    val includeConfidence = (arguments?.get("includeConfidence") as? Boolean) ?: false
+    Log.d("OcrDetector", "Args includeBoxes=$includeBoxes includeConfidence=$includeConfidence")
+
     val mediaImage: Image = frame.image
     val image = InputImage.fromMediaImage(mediaImage, frame.imageProxy.imageInfo.rotationDegrees)
 
@@ -45,11 +50,69 @@ class OcrFrameProcessorPlugin(
       val visionText: Text = Tasks.await(recognizer.process(image))
 
       if (visionText.text.isEmpty()) {
-        @Suppress("UNCHECKED_CAST")
-        return WritableNativeMap().toHashMap() as HashMap<String, Any>
+        return null
       }
 
       data.putString("text", visionText.text)
+
+      if (includeBoxes) {
+        val blocksArray = WritableNativeArray()
+        for (block in visionText.textBlocks) {
+          val blockMap = WritableNativeMap()
+          blockMap.putString("text", block.text)
+
+          val blockRect: Rect? = block.boundingBox
+          if (blockRect != null) {
+            val boxMap = WritableNativeMap()
+            boxMap.putDouble("x", blockRect.left.toDouble())
+            boxMap.putDouble("y", blockRect.top.toDouble())
+            boxMap.putDouble("width", (blockRect.right - blockRect.left).toDouble())
+            boxMap.putDouble("height", (blockRect.bottom - blockRect.top).toDouble())
+            blockMap.putMap("box", boxMap)
+          }
+
+          val linesArray = WritableNativeArray()
+          for (line in block.lines) {
+            val lineMap = WritableNativeMap()
+            lineMap.putString("text", line.text)
+
+            val lineRect: Rect? = line.boundingBox
+            if (lineRect != null) {
+              val lbox = WritableNativeMap()
+              lbox.putDouble("x", lineRect.left.toDouble())
+              lbox.putDouble("y", lineRect.top.toDouble())
+              lbox.putDouble("width", (lineRect.right - lineRect.left).toDouble())
+              lbox.putDouble("height", (lineRect.bottom - lineRect.top).toDouble())
+              lineMap.putMap("box", lbox)
+            }
+
+            val wordsArray = WritableNativeArray()
+            for (element in line.elements) {
+              val wordMap = WritableNativeMap()
+              wordMap.putString("text", element.text)
+              val wRect: Rect? = element.boundingBox
+              if (wRect != null) {
+                val wbox = WritableNativeMap()
+                wbox.putDouble("x", wRect.left.toDouble())
+                wbox.putDouble("y", wRect.top.toDouble())
+                wbox.putDouble("width", (wRect.right - wRect.left).toDouble())
+                wbox.putDouble("height", (wRect.bottom - wRect.top).toDouble())
+                wordMap.putMap("box", wbox)
+              }
+              wordsArray.pushMap(wordMap)
+            }
+            if (wordsArray.size() > 0) {
+              lineMap.putArray("words", wordsArray)
+            }
+            linesArray.pushMap(lineMap)
+          }
+          if (linesArray.size() > 0) {
+            blockMap.putArray("lines", linesArray)
+          }
+          blocksArray.pushMap(blockMap)
+        }
+        data.putArray("blocks", blocksArray)
+      }
 
       @Suppress("UNCHECKED_CAST")
       data.toHashMap() as HashMap<String, Any>
